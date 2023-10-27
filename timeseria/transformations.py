@@ -559,7 +559,7 @@ class Transformation(object):
 class Resampler(Transformation):
     """Resampling transformation."""
 
-    def __init__(self, unit, interpolator_class=LinearInterpolator):
+    def __init__(self, unit, interpolator_class=None):
 
         # Handle unit
         if isinstance(unit, TimeUnit):
@@ -571,10 +571,15 @@ class Resampler(Transformation):
 
         # Set interpolator
         self.interpolator_class=interpolator_class
+        if self.interpolator_class is not None:
+            raise NotImplementedError('Cannot specify an interpolator class')
 
     def process(self, series, *args, **kwargs):
-        kwargs['target'] = 'points'
-        return super(Resampler, self).process(series, *args, **kwargs) 
+        df = series.df
+        tu = str(self.time_unit)
+        resampled_df = df.resample(tu)
+        interpolated_df = resampled_df.interpolate('linear')
+        return TimeSeries(interpolated_df)
 
 
 #==========================

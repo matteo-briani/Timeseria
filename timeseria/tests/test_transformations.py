@@ -34,13 +34,15 @@ class TestResampler(unittest.TestCase):
         resampled_series = series.resample(4)
         
         # Check len
-        self.assertEqual(len(resampled_series), 1)
+        self.assertEqual(len(resampled_series), 3)
         
         # Check the only resampled point
-        self.assertEqual(len(resampled_series),1)
-        self.assertEqual(resampled_series[0].t,0)
-        self.assertEqual(resampled_series[0].data['value'],1)
-        self.assertEqual(resampled_series[0].data_loss,0)   
+        self.assertEqual(resampled_series[0].t,-4)
+        self.assertEqual(resampled_series[0].data['value'],4)
+        self.assertEqual(resampled_series[1].t,0)
+        self.assertEqual(resampled_series[1].data['value'],0)
+        self.assertEqual(resampled_series[2].t,4)
+        self.assertEqual(resampled_series[2].data['value'],4)
      
         # Now include extremes as well -> dropped support for this
         #resampled_series = series.resample(4, include_extremes=True)
@@ -265,37 +267,32 @@ class TestResampler(unittest.TestCase):
         resampled_series = Resampler('300s').process(series) 
         
         # Check len
-        self.assertEqual(len(resampled_series), 5)
+        self.assertEqual(len(resampled_series), 7)
         
-        # Do not check for t = 20 as extremes are not included 
+        # Check for t = 20
+        self.assertEqual(resampled_series[0].t, (60*20))
+        self.assertAlmostEqual(resampled_series[0].data['value'], 1.55)  # Expected: 1.58 (original)
         
         # Check for t = 25
-        self.assertEqual(resampled_series[0].t, (60*25))
-        self.assertAlmostEqual(resampled_series[0].data['value'], 1.58)  # Expected: 1.58 (original)
-        self.assertEqual(resampled_series[0].data_loss, 0)
+        self.assertEqual(resampled_series[1].t, (60*25))
+        self.assertAlmostEqual(resampled_series[1].data['value'], 1.58)  # Expected: 1.58 (original)
 
         # Check for t = 30
-        self.assertEqual(resampled_series[1].t, (60*30))
-        self.assertEqual(resampled_series[1].data['value'], 1.61)  # Expected: 1.61 (original)
-        self.assertEqual(resampled_series[1].data_loss, 0)
+        self.assertEqual(resampled_series[2].t, (60*30))
+        self.assertEqual(resampled_series[2].data['value'], 1.61)  # Expected: 1.61 (original)
 
         # Check for t = 35
-        self.assertEqual(resampled_series[2].t, (60*35))
-        self.assertAlmostEqual(resampled_series[2].data['value'], 1.64)  # Expected: 1.64 (reconstructed)
-        self.assertEqual(resampled_series[2].data_loss, 1)
+        self.assertEqual(resampled_series[3].t, (60*35))
+        self.assertAlmostEqual(resampled_series[3].data['value'], 1.64)  # Expected: 1.64 (reconstructed)
 
         # Check for t = 40
-        self.assertEqual(resampled_series[3].t, (60*40))
-        self.assertAlmostEqual(resampled_series[3].data['value'], 1.67)  # Expected: 1.67 (reconstructed)
-        self.assertEqual(resampled_series[3].data_loss, 1)
+        self.assertEqual(resampled_series[4].t, (60*40))
+        self.assertAlmostEqual(resampled_series[4].data['value'], 1.67)  # Expected: 1.67 (reconstructed)
 
         # Check for t = 45
-        self.assertEqual(resampled_series[4].t, (60*45))
-        self.assertAlmostEqual(resampled_series[4].data['value'], 1.70)  # Expected: 1.70 (original)
-        self.assertEqual(resampled_series[4].data_loss, 0)
+        self.assertEqual(resampled_series[5].t, (60*45))
+        self.assertAlmostEqual(resampled_series[5].data['value'], 1.70)  # Expected: 1.70 (original)
 
-        # Do not check for t = 50 as extremes are not included 
-            
             
     def test_resample_edge_2(self):
 
@@ -313,34 +310,31 @@ class TestResampler(unittest.TestCase):
         resampled_series = Resampler('300s').process(series) 
         
         # Check len
-        self.assertEqual(len(resampled_series), 5)
+        self.assertEqual(len(resampled_series), 7)
         
-        # Do not check for t = 20 as extremes are not included 
+        # Check for t = 20
+        self.assertEqual(resampled_series[0].t, (60*20)+10)
+        self.assertAlmostEqual(resampled_series[0].data['value'], 1.55)
         
         # Check for t = 25
-        self.assertEqual(resampled_series[0].t, (60*25))
-        self.assertAlmostEqual(resampled_series[0].data['value'], 1.579)
-        self.assertEqual(resampled_series[0].data_loss, 0)
+        self.assertEqual(resampled_series[1].t, (60*25))
+        self.assertAlmostEqual(resampled_series[1].data['value'], 1.579)
 
         # Check for t = 30
-        self.assertEqual(resampled_series[1].t, (60*30))
-        self.assertEqual(resampled_series[1].data['value'], 1.609)
-        self.assertEqual(resampled_series[1].data_loss, 0)
+        self.assertEqual(resampled_series[2].t, (60*30))
+        self.assertEqual(resampled_series[2].data['value'], 1.609)
 
         # Check for t = 35
-        self.assertEqual(resampled_series[2].t, (60*35))
-        self.assertAlmostEqual(resampled_series[2].data['value'], 1.642, 3)
-        self.assertAlmostEqual(resampled_series[2].data_loss, 290/300)
+        self.assertEqual(resampled_series[3].t, (60*35))
+        self.assertAlmostEqual(resampled_series[3].data['value'], 1.642, 3)
 
         # Check for t = 40
-        self.assertEqual(resampled_series[3].t, (60*40))
-        self.assertAlmostEqual(resampled_series[3].data['value'], 1.676, 3)
-        self.assertEqual(resampled_series[3].data_loss, 1)
+        self.assertEqual(resampled_series[4].t, (60*40))
+        self.assertAlmostEqual(resampled_series[4].data['value'], 1.676, 3)
 
         # Check for t = 45
-        self.assertEqual(resampled_series[4].t, (60*45))
-        self.assertAlmostEqual(resampled_series[4].data['value'], 1.709, 3)
-        self.assertAlmostEqual(resampled_series[4].data_loss, 10/300)
+        self.assertEqual(resampled_series[5].t, (60*45))
+        self.assertAlmostEqual(resampled_series[5].data['value'], 1.709, 3)
 
         # Do not check for t = 50 as extremes are not included
         # Note: a point after the right extreme here would mean
